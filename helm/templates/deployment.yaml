@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: measurement-api
+  labels:
+    deployment: measurement-api
+spec:
+  selector:
+    matchLabels:
+      pod: measurement-api
+  replicas: {{ .Values.measapi.replicas }}
+  template:
+    metadata:
+      labels:
+        pod: measurement-api
+{{- with .Values.podLabels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+      annotations:
+{{- with .Values.podAnnotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      containers:
+      - name: measurement-api
+        image: {{ .Values.image.registry }}/{{ .Values.image.imagename }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            # memory: "350Mi"
+            # cpu: "50m"
+        # volumeMounts:
+        # - name: config-volume
+        #   mountPath: /usr/share/hue/desktop/conf/z-hue.ini
+        #   subPath: hue-ini
+        # - name: config-volume-extra
+        #   mountPath: /usr/share/hue/desktop/conf/zz-hue.ini
+        #   subPath: hue-ini
+        # - name: hive-config-volume
+        #   mountPath: /etc/hive/conf/hive-site.xml
+        #   subPath: hive-site
+        # readinessProbe:
+        #   httpGet:
+        #     path: /desktop/debug/is_alive
+        #     port: 8888
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 3
+        #   failureThreshold: 30
+      # volumes:
+      #   - name: config-volume
+      #     configMap:
+      #       name: hue-config
+      #   - name: config-volume-extra
+      #     configMap:
+      #       name: hue-config-extra
+      #   - name: hive-config-volume
+      #     configMap:
+      #       name: hive-config
+{{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+{{- end }}
